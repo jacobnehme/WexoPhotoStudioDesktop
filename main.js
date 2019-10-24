@@ -42,19 +42,21 @@ function createWindow() {
             label: 'File',
             submenu: [
                 {
+                    label: 'Scan Barcode',
+                    accelerator: 'Control+B',
+                    click(){
+                        scanBarcode();
+                    }
+                },
+                {type: 'separator'},
+                {
                     label: 'Select Folder',
                     click() {
                         selectFolder();
                     }
                 },
                 {
-                    label: 'Scan Barcode',
-                    click(){
-                        scanBarcode();
-                    }
-                },
-                {
-                    label: 'Watch Folder',
+                    label: '(Dev) Watch Folder',
                     click(){
                         watchFolder();
                     }
@@ -178,6 +180,20 @@ const formData = require('form-data');
 const axios = require('axios');
 const prompt = require('electron-prompt');
 
+//Scan Barcode
+let barcode = null;
+function scanBarcode() {
+    prompt({
+        title: 'Scan Barcode',
+        label: 'Scan Barcode',
+        type: 'input',
+    }, mainWindow).then(result => {
+        barcode = result;
+    }).catch(err => {
+        console.log(err)
+    });
+}
+
 //Select Folder
 let folder = null;
 function selectFolder() {
@@ -185,20 +201,6 @@ function selectFolder() {
         properties: ['openDirectory'],
     }).then(result => {
         folder = result.filePaths;
-    }).catch(err => {
-        console.log(err)
-    });
-}
-
-//Scan Barcode
-let barcode = null;
-function scanBarcode() {
-    prompt(mainWindow, {
-        title: 'Scan Barcode',
-        label: 'Scan Barcode',
-        type: 'input',
-    }).then(result => {
-        barcode = result;
     }).catch(err => {
         console.log(err)
     });
