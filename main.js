@@ -44,7 +44,7 @@ function createWindow() {
                 {
                     label: 'Scan Barcode',
                     accelerator: 'Control+B',
-                    click(){
+                    click() {
                         scanBarcode();
                     }
                 },
@@ -57,7 +57,7 @@ function createWindow() {
                 },
                 {
                     label: '(Dev) Watch Folder',
-                    click(){
+                    click() {
                         watchFolder();
                     }
                 },
@@ -182,6 +182,7 @@ const prompt = require('electron-prompt');
 
 //Scan Barcode
 let barcode = null;
+
 function scanBarcode() {
     prompt({
         title: 'Scan Barcode',
@@ -196,6 +197,7 @@ function scanBarcode() {
 
 //Select Folder
 let folder = null;
+
 function selectFolder() {
     dialog.showOpenDialog(mainWindow, {
         properties: ['openDirectory'],
@@ -209,30 +211,27 @@ function selectFolder() {
 // Watch for changes in directory
 function watchFolder() {
 
-    const watcher = chokidar.watch(folder).on('all', (event, path) => {
-        console.log(event, path);
+    const watcher = chokidar.watch(folder).on('add', path => {
+        console.log(path);
 
-        if (event == 'add') {
+        //Load file
+        let file = fs.createReadStream(path);
 
-            //Load file
-            let file = fs.createReadStream(path);
+        //Create form
+        let form = new formData;
+        form.append('orderLine_id', barcode);
+        form.append('photo', file);
 
-            //Create form
-            let form = new formData;
-            form.append('orderLine_id', barcode);
-            form.append('photo', file);
-
-            //Post form
-            axios.post('http://127.0.0.1:8000/photos', form, {
-                headers: {
-                    'Content-Type': 'multipart/form-data; boundary=' + form.getBoundary()
-                }
-            }).then(function (response) {
-                console.log(response);
-            }).catch((error) => {
-                console.error(error)
-            })
-        }
+        //Post form
+        axios.post('http://127.0.0.1:8000/photos', form, {
+            headers: {
+                'Content-Type': 'multipart/form-data; boundary=' + form.getBoundary()
+            }
+        }).then(function (response) {
+            console.log(response);
+        }).catch((error) => {
+            console.error(error)
+        })
     });
 }
 
