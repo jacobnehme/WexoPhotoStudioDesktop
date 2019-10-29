@@ -18,7 +18,7 @@ function createWindow() {
 
     // and load the index.html of the app.
     // mainWindow.loadFile('index.html')
-    mainWindow.loadURL('http://myprojects.localhost/WexoPhotoStudio/public/')
+    mainWindow.loadURL('http://127.0.0.1:8000/');
 
     //Custom Menu
     const template = [
@@ -208,7 +208,7 @@ function selectFolder() {
     });
 }
 
-// Watch for changes in directory
+// Watch for added files in directory
 function watchFolder() {
 
     const watcher = chokidar.watch(folder).on('add', path => {
@@ -238,4 +238,3 @@ function watchFolder() {
 // function stopWatching() {
 //     watcher.close();
 // }
-
