@@ -182,7 +182,6 @@ const prompt = require('electron-prompt');
 
 //Scan Barcode
 let barcode = null;
-
 function scanBarcode() {
     prompt({
         title: 'Scan Barcode',
@@ -197,44 +196,44 @@ function scanBarcode() {
 
 //Select Folder
 let folder = null;
-
 function selectFolder() {
     dialog.showOpenDialog(mainWindow, {
         properties: ['openDirectory'],
     }).then(result => {
         folder = result.filePaths;
+        //watchFolder(result.filePaths);
     }).catch(err => {
         console.log(err)
     });
 }
 
-// Watch for added files in directory
-function watchFolder() {
-
+//TODO check if folder and barcode are set, prompt/block then continue
+function watchFolder(folder) {
     const watcher = chokidar.watch(folder).on('add', path => {
-        console.log(path);
-
-        //Load file
-        let file = fs.createReadStream(path);
-
-        //Create form
-        let form = new formData;
-        form.append('orderLine_id', barcode);
-        form.append('photo', file);
-
-        //Post form
-        axios.post('http://127.0.0.1:8000/photos', form, {
-            headers: {
-                'Content-Type': 'multipart/form-data; boundary=' + form.getBoundary()
-            }
-        }).then(function (response) {
-            console.log(response);
-        }).catch((error) => {
-            console.error(error)
-        })
+        postForm(createForm(barcode, loadFile(path)));
     });
 }
 
-// function stopWatching() {
-//     watcher.close();
-// }
+function loadFile(path) {
+    return fs.createReadStream(path);
+}
+
+function createForm(barcode, file) {
+    let form = new formData;
+    form.append('orderLine_id', barcode);
+    form.append('photo', file);
+
+    return form;
+}
+
+function postForm(form) {
+    axios.post('http://127.0.0.1:8000/photos', form, {
+        headers: {
+            'Content-Type': 'multipart/form-data; boundary=' + form.getBoundary()
+        }
+    }).then(function (response) {
+        console.log(response);
+    }).catch((error) => {
+        console.error(error)
+    })
+}
