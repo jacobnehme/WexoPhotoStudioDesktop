@@ -214,6 +214,8 @@ function upload(barcode) {
     }
 
     postForm(form);
+
+    files = [];
 }
 
 let files = [];
