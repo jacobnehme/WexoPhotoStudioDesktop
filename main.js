@@ -207,9 +207,8 @@ function selectFolder() {
     });
 }
 
-//TODO check if folder and barcode are set, prompt/block then continue
-function watchFolder(folder) {
-    const watcher = chokidar.watch(folder).on('add', path => {
+function watchFolder() {
+    chokidar.watch(folder).on('add', path => {
         postForm(createForm(barcode, loadFile(path)));
     });
 }
