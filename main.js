@@ -55,12 +55,12 @@ function createWindow() {
                         selectFolder();
                     }
                 },
-                {
-                    label: '(Dev) Watch Folder',
-                    click() {
-                        watchFolder();
-                    }
-                },
+                // {
+                //     label: '(Dev) Watch Folder',
+                //     click() {
+                //         watchFolder();
+                //     }
+                // },
                 false ? {role: 'close'} : {role: 'quit'}
             ]
         },
@@ -181,48 +181,50 @@ const axios = require('axios');
 const prompt = require('electron-prompt');
 
 //Scan Barcode
-let barcode = null;
 function scanBarcode() {
     prompt({
         title: 'Scan Barcode',
         label: 'Scan Barcode',
         type: 'input',
     }, mainWindow).then(result => {
-        barcode = result;
+        upload(result);
     }).catch(err => {
         console.log(err)
     });
 }
 
 //Select Folder
-let folder = null;
 function selectFolder() {
     dialog.showOpenDialog(mainWindow, {
         properties: ['openDirectory'],
     }).then(result => {
-        folder = result.filePaths;
-        //watchFolder(result.filePaths);
+        watchFolder(result.filePaths);
     }).catch(err => {
         console.log(err)
     });
 }
 
-function watchFolder() {
+function upload(barcode) {
+
+    let form = new formData;
+    form.append('orderLine_id', barcode);
+
+    for (let i = 0, len = files.length; i < len; i++) {
+        form.append('photos[]', loadFile(files[i]));
+    }
+
+    postForm(form);
+}
+
+let files = [];
+function watchFolder(folder) {
     chokidar.watch(folder).on('add', path => {
-        postForm(createForm(barcode, loadFile(path)));
+        files.push(path);
     });
 }
 
 function loadFile(path) {
     return fs.createReadStream(path);
-}
-
-function createForm(barcode, file) {
-    let form = new formData;
-    form.append('orderLine_id', barcode);
-    form.append('photo', file);
-
-    return form;
 }
 
 function postForm(form) {
@@ -231,8 +233,10 @@ function postForm(form) {
             'Content-Type': 'multipart/form-data; boundary=' + form.getBoundary()
         }
     }).then(function (response) {
-        console.log(response);
+        console.log(response.data);
     }).catch((error) => {
         console.error(error)
     })
 }
+
+app.on('ready', selectFolder);
