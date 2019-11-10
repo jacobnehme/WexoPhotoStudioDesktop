@@ -180,6 +180,25 @@ const formData = require('form-data');
 const axios = require('axios');
 const prompt = require('electron-prompt');
 
+//Select Folder
+function selectFolder() {
+    dialog.showOpenDialog(mainWindow, {
+        properties: ['openDirectory'],
+    }).then(result => {
+        watchFolder(result.filePaths);
+    }).catch(err => {
+        console.log(err)
+    });
+}
+
+let files = [];
+function watchFolder(folder) {
+    files = [];
+    chokidar.watch(folder).on('add', path => {
+        files.push(path);
+    });
+}
+
 //Scan Barcode
 function scanBarcode() {
     prompt({
@@ -193,36 +212,22 @@ function scanBarcode() {
     });
 }
 
-//Select Folder
-function selectFolder() {
-    dialog.showOpenDialog(mainWindow, {
-        properties: ['openDirectory'],
-    }).then(result => {
-        watchFolder(result.filePaths);
-    }).catch(err => {
-        console.log(err)
-    });
-}
-
 function upload(barcode) {
 
-    let form = new formData;
-    form.append('orderLine_id', barcode);
+    if (files.length > 0){
+        let form = new formData;
+        form.append('orderLine_id', barcode);
 
-    for (let i = 0, len = files.length; i < len; i++) {
-        form.append('photos[]', loadFile(files[i]));
+        for (let i = 0, len = files.length; i < len; i++) {
+            form.append('photos[]', loadFile(files[i]));
+        }
+
+        postForm(form);
+        files = [];
     }
-
-    postForm(form);
-
-    files = [];
-}
-
-let files = [];
-function watchFolder(folder) {
-    chokidar.watch(folder).on('add', path => {
-        files.push(path);
-    });
+    else{
+        console.log('No files');
+    }
 }
 
 function loadFile(path) {
